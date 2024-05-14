@@ -1,9 +1,26 @@
+# ======================================================================
+# UNIFAL - Universidade Federal de Alfenas
+# BACHARELADO EM CIÊNCIA DA COMPUTAÇÃO
+# Trabalho......: Contagem de feijões
+# Professor.....: Luiz Eduardo da Silva
+# Aluno.........: Otavio Ferreira de Brito Silveira
+# Data..........: 06/05/2024
+# ======================================================================
+
+import sys
+
+
 class Image:
     def __init__(self, matrix, height, width, gray_level):
         self.matrix = matrix
         self.height = height
         self.width = width
         self.gray_level = gray_level
+
+
+"""
+Método para carregar uma imagem .pgm
+"""
 
 
 def readpgm(name) -> Image:
@@ -15,10 +32,8 @@ def readpgm(name) -> Image:
             line = f.readline()
 
         (width, height) = [int(i) for i in line.split()]
-        print(width, height)
         depth = int(f.readline())
         assert depth <= 255
-        print(depth)
 
         img = []
         row = []
@@ -48,7 +63,12 @@ def union(parent: list, x: int, y: int):
     parent[find(parent, y)] = find(parent, x)
 
 
-def cc_label(img: Image):
+"""
+Rotulação de componentes conexos
+"""
+
+
+def cc_label(img: Image) -> int:
     parents = [i for i in range(1000)]
     label_id = 1
     for i in range(1, img.height):
@@ -77,7 +97,13 @@ def cc_label(img: Image):
             sets.add(parent)
 
     img.gray_level = label_id
-    print(len(sets)-1)
+    components = len(sets)-1
+    return components
+
+
+"""
+Transformada de distância
+"""
 
 
 def distance(img: Image):
@@ -92,8 +118,8 @@ def distance(img: Image):
             if p != 0:
                 img.matrix[i][j] = min(a+1, b+1)
     # Step 2
-    for i in range(img.height -2, -1, -1):
-        for j in range(img.width -2, -1, -1):
+    for i in range(img.height - 2, -1, -1):
+        for j in range(img.width - 2, -1, -1):
             p = img.matrix[i][j]
             # Bottom and right neighbors
             a = img.matrix[i+1][j]
@@ -103,6 +129,11 @@ def distance(img: Image):
             if p > max_gl:
                 max_gl = p
     img.gray_level = max_gl
+
+
+"""
+Método para limiarização
+"""
 
 
 def threshold(img: Image, limit: int):
@@ -119,6 +150,11 @@ def threshold(img: Image, limit: int):
             img.matrix[i][j] = T_th[img.matrix[i][j]]
 
 
+"""
+Método para normalizar imagem transformada por distância
+"""
+
+
 def normalize(img: Image, scale):
     t = [0] * (scale + 1)
     gl = img.gray_level
@@ -132,11 +168,22 @@ def normalize(img: Image, scale):
     img.gray_level = scale
 
 
-def histogram(img: Image):
-    hist = [0] * (img.gray_level+1)
-    for i in range(img.height):
-        for j in range(img.width):
-            hist[img.matrix[i][j]] += 1
-    return hist
+def main():
+    if len(sys.argv) != 2:
+        print(
+            "[AVISO] : Especifique o caminho do arquivo de imagem: <python conta.py image.pbm>")
+        return
+
+    img = readpgm(sys.argv[1])
+    gl = img.gray_level
+
+    threshold(img, 100)
+    distance(img)
+    normalize(img, gl)
+    threshold(img, 190)
+    count = cc_label(img)
+    print("\n#COMPONENTES =", count)
 
 
+if __name__ == '__main__':
+    main()
