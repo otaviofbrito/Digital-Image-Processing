@@ -49,5 +49,5 @@
         ```bash
         jupyter notebook
         ```
-    - Open `filtering.ipynb` or `intensity_operations.ipynb` to explore filtering and intensity operations.
+    - Open `filtering.ipynb` or `intensity.ipynb` to explore filtering and intensity operations.
 
